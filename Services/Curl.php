@@ -45,6 +45,12 @@ class Curl implements CurlInterface {
      */
     private $curlOptionsHandler;
 
+
+    /**
+     * @var headers
+     */
+    private $headers;
+
     /**
      * Constructor
      *
@@ -54,6 +60,8 @@ class Curl implements CurlInterface {
     public function __construct(CurlOptionsHandler $curlOptionsHandler) {
         function_exists('curl_version') ? $this->initializeCurl() : $this->curlException("The PHP curl library is not installed (http://php.net/manual/de/curl.installation.php)", 2);
         $this->curlOptionsHandler = $curlOptionsHandler;
+
+        $this->headers = array();
     }
 
     /**
@@ -71,7 +79,31 @@ class Curl implements CurlInterface {
      * @return Curl
      */
     public function setContentType($contentType) {
-        $this->curlOptionsHandler->setOption(CURLOPT_HTTPHEADER, array('Content-Type: ' . $contentType));
+        $this->headers[] = 'Content-Type: ' . $contentType;
+        return $this;
+    }
+
+    /**
+     * Set auth for curl request
+     *
+     * @param string $type
+     * @param string $credentials
+     * @return $this
+     */
+    public function setAuthentication($type = 'Bearer', $credentials)
+    {
+        $this->headers[] = 'Authorization: '.$type.' '.$credentials;
+        return $this;
+    }
+
+    /**
+     * Clear curl request headers
+     *
+     * @return $this
+     */
+    public function clearHeaders()
+    {
+        $this->headers = array();
         return $this;
     }
 
@@ -82,6 +114,10 @@ class Curl implements CurlInterface {
         if (!$this->assertUrl($url))             return $this->invalidArgumentException('Invalid url given: ' . $url);
         if (!$this->assertString($payload))      return $this->invalidArgumentException('Invalid payload given: ' . $payload);
         if (!$this->assertHttpMethod($method))   return $this->invalidArgumentException('Invalid http method given: ' . $method);
+
+        if (count($this->headers) !== 0) {
+            $this->curlOptionsHandler->setOption(CURLOPT_HTTPHEADER, $this->headers);
+        }
 
         $this->curlOptionsHandler->setOptions($options);
         $this->curlOptionsHandler->setOption(CURLOPT_RETURNTRANSFER, true);
