@@ -86,7 +86,7 @@ class RestClient implements RestInterface {
         }
 
         if ($type === 'Basic') {
-            if (!isset($credentials['username']) || !isset($credentials['password']))) {
+            if (!isset($credentials['username']) || !isset($credentials['password'])) {
                 throw new \Exception('You must provide a username and a password for Basic auth');
             }
             $credentials = base64_encode($credentials['username'].':'.$credentials['password']);
