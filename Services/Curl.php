@@ -111,6 +111,7 @@ class Curl implements CurlInterface {
      * {@inheritdoc}
      */
     public function sendRequest($url, $method, array $options = array(), $payload = '') {
+        $payload = (is_array($payload)) ? http_build_query($payload) : $payload;
         if (!$this->assertUrl($url))             return $this->invalidArgumentException('Invalid url given: ' . $url);
         if (!$this->assertString($payload))      return $this->invalidArgumentException('Invalid payload given: ' . $payload);
         if (!$this->assertHttpMethod($method))   return $this->invalidArgumentException('Invalid http method given: ' . $method);
